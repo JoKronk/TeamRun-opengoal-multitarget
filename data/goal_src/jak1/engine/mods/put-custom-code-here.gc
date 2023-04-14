@@ -21,9 +21,60 @@
     ;; Begin function defintions.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-    (defun runs-every-frame ()
-      ;;(increase-power-cell-by-one) This is a call to increase-power-cell-by-one defined in define-custom-functions-here.gc
 
+
+    (defun print-position-json ()
+      (when (or (!= (-> *multiplayer-info* players (-> *multiplayer-info* player_num) trans_x) (-> *target* root trans x))
+      (!= (-> *multiplayer-info* players (-> *multiplayer-info* player_num) trans_y) (-> *target* root trans y))
+      (!= (-> *multiplayer-info* players (-> *multiplayer-info* player_num) trans_z) (-> *target* root trans z)))
+      
+        (format 0 "{ \"transX\": ~f, \"transY\": ~f, \"transZ\": ~f, ~s, \"tgtState\": \"~a\" }~%" 
+          (-> *target* root trans x)
+          (-> *target* root trans y)
+          (-> *target* root trans z)
+          (string-format "\"quatX\":~f, \"quatY\": ~f,  \"quatZ\": ~f,  \"quatW\": ~f" 
+          (-> *target* root quat x)
+          (-> *target* root quat y)
+          (-> *target* root quat z)
+          (-> *target* root quat w))
+          (-> *target* state name)
+          )
+        )
+
+      (none)
+      )
+
+    (defun runs-every-frame ()
+      (when (and (!= *target* #f) (!= (-> (level-get-target-inside *level*) name) 'title))
+      
+      ;; setup our own remote-player-info if we haven't yet
+      (set-up-self-remote-if-null)
+
+      (when (and *target* (>= (-> *multiplayer-info* player_num) 0) (< (-> *multiplayer-info* player_num) MAX_MULTIPLAYER_COUNT))
+
+        ;; if never synced positions, or its been X ms, request updated positions
+        (when (and (>= (-> *multiplayer-info* player_num) 0)
+               (or (not *last-position-sync-time*)
+                   (>= (- (-> *display* base-frame-counter) *last-position-sync-time*) (seconds 0.05))
+                   )
+               )
+                  
+          ;; update last sync time
+          (set! *last-position-sync-time* (-> *display* base-frame-counter))
+
+          ;; update this player's position
+          (update-self-multiplayer-info)
+
+          (if (= (-> *multiplayer-info* players (-> *multiplayer-info* player_num) mp_state) (mp-tgt-state mp-tgt-disconnected))
+            (set! (-> *multiplayer-info* players (-> *multiplayer-info* player_num) mp_state) (mp-tgt-state mp-tgt-connected))
+            )
+
+          )
+
+        (render-targets)
+
+        )
+      )
       (none)
       )
 

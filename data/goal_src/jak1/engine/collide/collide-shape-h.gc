@@ -517,7 +517,7 @@
     (debug-draw (_type_) none 31)
     (fill-cache-for-shape! (_type_ float collide-kind collide-cache collide-work) none 32)
     (fill-cache-integrate-and-collide! (_type_ vector collide-kind collide-cache collide-work) none 33)
-    (find-prim-by-id (_type_ uint) collide-shape-prim  34)
+    (find-prim-by-id (_type_ uint) collide-shape-prim 34)
     (detect-riders! (_type_) symbol 35)
     (build-bounding-box-for-shape (_type_ bounding-box float collide-kind) symbol 36)
     (integrate-and-collide! (_type_ vector) none 37)
